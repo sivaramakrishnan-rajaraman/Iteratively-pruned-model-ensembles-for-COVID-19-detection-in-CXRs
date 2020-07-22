@@ -242,4 +242,54 @@ plt.imshow(x[0] / 2 + 0.5) #this increases te brightness of the image
 
 ```
 
+## Generate CAM based decision
+
+Visualize the learned behavior using CAM-based ROI localization
+```
+model = load_model('vgg16_pruning_20percent.h5') 
+model.summary()
+sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.95, nesterov=True) 
+model.compile(optimizer=sgd,
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+#path to image to visualize
+img_path = 'image1.png'
+img = image.load_img(img_path)
+#preprocess the image
+x = image.img_to_array(img)
+x = np.expand_dims(x, axis=0)
+x /= 255 
+#predict on the image
+preds = model.predict(x)[0]
+print(preds)
+#begin visualization
+covid_output = model.output[:, 0] 
+#Output feature map from the deepest convolutional layer
+last_conv_layer = model.get_layer('block5_conv3')
+#compute the Gradient of the expected class with regard to the output feature map of block5_conv3 or the deepst convolutional layer)
+grads = K.gradients(covid_output, last_conv_layer.output)[0]
+pooled_grads = K.mean(grads, axis=(0, 1, 2))
+iterate = K.function([model.input],[pooled_grads, last_conv_layer.output[0]])
+pooled_grads_value, conv_layer_output_value = iterate([x])
+for i in range(512): #number of filters in the deepest convolutional layer
+    conv_layer_output_value[:, :, i] *= pooled_grads_value[i]
+#For visualization purposes, we normalize the heatmap between 0 and 1.
+heatmap = np.mean(conv_layer_output_value, axis=-1)
+heatmap = np.maximum(heatmap, 0)
+heatmap /= np.max(heatmap)
+plt.matshow(heatmap)
+img = cv2.imread(img_path) #path to the image
+#Resizes the heatmap to be the same size as the original image
+heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+#Converts the heatmap to RGB 
+heatmap = np.uint8(255 * heatmap)
+#Applies the heatmap to the original image
+heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+superimposed_img = heatmap * 0.4 + img # 0.4 here is a heatmap intensity factor.
+#Saves the image to disk
+cv2.imwrite('cam_image.png', superimposed_img)
+
+```
+
+
   
