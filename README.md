@@ -13,10 +13,10 @@ The attached notebook discusses: preprocessing to convert DICOM and JPEG images 
 
 The weights of the best-performing, iteratively pruned DL models (VGG-16, VGG-19, and Inception-V3) are uploaded to https://drive.google.com/drive/folders/1ec894pKM4LUJx_m0rJmj2y7FgawphBhO?usp=sharing. We found that the VGG-16 model pruned to remove 20% of the filters with the highest APoZ from each layer, VGG-19 model pruned to remove 6% of the filters with the highest APoZ, and Inception-V3 model, pruned to remove 30% of the filters with the highest APoZ from each layer delivred superior classification performance toward classifying CXRs as normal or showing bacterial or COVID-19 viral pneumonia-related opacities. The performance of the pruned and unpruned, baseline models is discussed in the IEEE Access publication available at  https://ieeexplore.ieee.org/document/9121222. The percentage reduction in the computational parameters of the pruned models is as shown below:
 ```
-Models	          % Reduction
-VGG-16-P	          46.03
-VGG-19-P	          16.13
-Inception-V3-P	    36.10
+Models	      % Reduction
+VGG-16-P	      46.03
+VGG-19-P	      16.13
+Inception-V3-P	36.10
 
 ```
 
