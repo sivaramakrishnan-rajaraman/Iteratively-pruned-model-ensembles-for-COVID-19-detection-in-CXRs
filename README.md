@@ -202,4 +202,44 @@ print('The accuracy of custom VGG16 model is: ', vgg16_model_accuracy)
 ```
 
 Repeat the above steps for each of the pruned models. You can further use the pruned model weights to perform ensembles at your preference. 
+
+### Generate LIME-based decisions
+
+To visualize the learned behavior of the pruned models, we shown an instance of how to use LIME visualization with the trained models:
+
+```
+model = load_model('vgg16_pruning_20percent.h5') 
+model.summary()
+sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.95, nesterov=True) 
+model.compile(optimizer=sgd,
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+#path to image to visualize
+img_path = 'image1.png'
+img = image.load_img(img_path)
+#preprocess the image
+x = image.img_to_array(img)
+x = np.expand_dims(x, axis=0)
+x /= 255 
+#predict on the image
+preds = model.predict(x)[0]
+print(preds)
+#initialize the explainer
+from lime import lime_image
+from skimage.segmentation import mark_boundaries
+explainer = lime_image.LimeImageExplainer()
+explanation = explainer.explain_instance(x[0], 
+                                         model.predict, top_labels=1, 
+                                         hide_color=0, num_samples=42)
+print(explanation.top_labels[0])
+temp, mask = explanation.get_image_and_mask(0, #change the respective class index
+                                            positive_only=False, 
+                                            num_features=5, hide_rest=False) 
+plt.figure()
+plt.imshow(mark_boundaries(temp / 2 + 0.5, mask))
+plt.figure()
+plt.imshow(x[0] / 2 + 0.5) #this increases te brightness of the image
+
+```
+
   
