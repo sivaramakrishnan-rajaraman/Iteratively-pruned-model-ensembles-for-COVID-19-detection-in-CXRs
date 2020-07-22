@@ -160,7 +160,7 @@ data
   |-bacterial
   |covid-viral
   
- We used Keras Imageenerator to preprocess the testimages as follows:
+ We used Keras ImageDataGenerator to preprocess the test images as follows:
  
  ```
 test_datagen = ImageDataGenerator(rescale=1./255)
